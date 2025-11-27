@@ -3,14 +3,13 @@ import json
 import requests
 from kafka import KafkaProducer
 
+from utils.constants import SYMBOLS, FINNHUB_BASE_URL
 from config.config_loader import (
     FINNHUB_API_KEY,
     KAFKA_BOOTSTRAP,
     KAFKA_TOPIC,
     FETCH_INTERVAL_SEC,
 )
-from utils.constants import SYMBOLS, FINNHUB_BASE_URL
-
 
 producer = KafkaProducer(
     bootstrap_servers=[KAFKA_BOOTSTRAP],

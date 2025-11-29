@@ -14,11 +14,10 @@ from config.config_loader import (
     KAFKA_TOPIC,
 )
 
-
 def kafka_to_s3_bronze_pipeline(file_prefix: str):
     """
     Consume a batch of messages from Kafka and write them to S3 Bronze
-    as a single CSV file.
+    as a single CSV file (Federal Credit Similar Maturity Rates).
     """
     consumer = KafkaConsumer(
         KAFKA_TOPIC,
@@ -27,10 +26,9 @@ def kafka_to_s3_bronze_pipeline(file_prefix: str):
         enable_auto_commit=False,
         consumer_timeout_ms=5000,  # stop after 5s of no messages
         value_deserializer=lambda v: json.loads(v.decode("utf-8")),
-        group_id="airflow-batch-consumer",
+        group_id="federalcredit-batch-consumer",
     )
 
-    # Read all messages currently in the topic
     batch = [msg.value for msg in consumer]
     consumer.close()
 
@@ -39,7 +37,6 @@ def kafka_to_s3_bronze_pipeline(file_prefix: str):
         return
 
     # ---- Build CSV in memory ----
-    # Use keys from the first record as columns (you can hard-code if you like)
     columns = list(batch[0].keys())
 
     buffer = io.StringIO()
@@ -61,9 +58,8 @@ def kafka_to_s3_bronze_pipeline(file_prefix: str):
     run_date = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     now_str = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S")
 
-    # New CSV prefix under bronze
     key = (
-        f"real-time-yieldcurve-bronze/stock_quotes_csv/"
+        "real-time-yieldcurve-bronze/federal_credit_maturity_rates_csv/"
         f"date={run_date}/{file_prefix}_{now_str}.csv"
     )
 

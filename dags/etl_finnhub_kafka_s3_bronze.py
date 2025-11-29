@@ -7,7 +7,7 @@ from airflow.operators.python import PythonOperator
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pipelines.finnhub_kafka_pipeline import finnhub_to_kafka_pipeline
+from pipelines.federalcredit_kafka_pipeline import federalcredit_to_kafka_pipeline
 from pipelines.kafka_s3_pipeline import kafka_to_s3_bronze_pipeline
 
 default_args = {
@@ -18,23 +18,23 @@ default_args = {
 file_postfix = datetime.now().strftime("%Y%m%d")
 
 dag = DAG(
-    dag_id="etl_finnhub_kafka_s3_bronze",
+    dag_id="etl_federalcredit_kafka_s3_bronze",
     default_args=default_args,
-    schedule_interval="@hourly",  
+    schedule_interval="@hourly",
     catchup=False,
-    tags=["finnhub", "kafka", "s3", "bronze"],
+    tags=["federalcredit", "treasury", "kafka", "s3", "bronze"],
 )
 
 fetch_and_stream = PythonOperator(
-    task_id="finnhub_to_kafka",
-    python_callable=finnhub_to_kafka_pipeline,
+    task_id="federalcredit_to_kafka",
+    python_callable=federalcredit_to_kafka_pipeline,
     dag=dag,
 )
 
 kafka_to_s3 = PythonOperator(
     task_id="kafka_to_s3_bronze",
     python_callable=kafka_to_s3_bronze_pipeline,
-    op_kwargs={"file_prefix": f"stock_quotes_{file_postfix}"},
+    op_kwargs={"file_prefix": f"federal_credit_maturity_rates_{file_postfix}"},
     dag=dag,
 )
 
